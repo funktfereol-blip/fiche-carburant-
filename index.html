@@ -1,1 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fiche Carburant</title>
 
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 8px;
+      background: #198754;
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    button:active {
+      opacity: 0.8;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eef8f1;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .result p {
+      margin: 8px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>🚗 Fiche Carburant</h1>
+
+    <div class="card">
+
+      <label for="date">Date</label>
+      <input type="date" id="date">
+
+      <label for="km">Kilométrage</label>
+      <input type="number" id="km" placeholder="Ex : 125000">
+
+      <label for="litres">Litres ajoutés</label>
+      <input type="number" id="litres" step="0.01" placeholder="Ex : 45.5">
+
+      <label for="prix">Prix du carburant (€ / litre)</label>
+      <input type="number" id="prix" step="0.001" placeholder="Ex : 1.789">
+
+      <label for="carburant">Type de carburant</label>
+      <select id="carburant">
+        <option>Essence</option>
+        <option>Diesel</option>
+        <option>E10</option>
+        <option>E85</option>
+        <option>GPL</option>
+      </select>
+
+      <button onclick="calculer()">Calculer</button>
+
+      <div class="result" id="resultat">
+        <p><strong>Carburant :</strong> <span id="rCarburant"></span></p>
+        <p><strong>Litres :</strong> <span id="rLitres"></span> L</p>
+        <p><strong>Prix/L :</strong> <span id="rPrix"></span> €</p>
+        <p><strong>Total :</strong> <span id="rTotal"></span> €</p>
+        <p><strong>Kilométrage :</strong> <span id="rKm"></span> km</p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    function calculer() {
+      const litres = parseFloat(document.getElementById("litres").value);
+      const prix = parseFloat(document.getElementById("prix").value);
+      const km = document.getElementById("km").value;
+      const carburant = document.getElementById("carburant").value;
+
+      if (isNaN(litres) || isNaN(prix)) {
+        alert("Merci de remplir les litres et le prix.");
+        return;
+      }
+
+      const total = litres * prix;
+
+      document.getElementById("rCarburant").textContent = carburant;
+      document.getElementById("rLitres").textContent = litres.toFixed(2);
+      document.getElementById("rPrix").textContent = prix.toFixed(3);
+      document.getElementById("rTotal").textContent = total.toFixed(2);
+      document.getElementById("rKm").textContent = km || "-";
+
+      document.getElementById("resultat").style.display = "block";
+    }
+  </script>
+
+</body>
+</html>
