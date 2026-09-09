@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Fiche Carburant</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+
+*{
+
+box-sizing:border-box;
+
+}
+
+body{
+
+margin:0;
+
+background:#f3f5f7;
+
+font-family:Arial,sans-serif;
+
+color:#202124;
+
+}
+
+header{
+
+text-align:center;
+
+padding:25px 15px;
+
+}
+
+h1{
+
+font-size:34px;
+
+margin:10px 0;
+
+}
+
+.card{
+
+background:white;
+
+max-width:950px;
+
+margin:0 auto 20px;
+
+padding:20px;
+
+border-radius:20px;
+
+box-shadow:0 4px 20px #0001;
+
+}
+
+button{
+
+border:0;
+
+border-radius:13px;
+
+padding:15px 20px;
+
+font-size:17px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+}
+
+.primary{
+
+background:#3f8f5d;
+
+color:white;
+
+width:100%;
+
+}
+
+.secondary{
+
+background:#e9edf0;
+
+}
+
+#preview{
+
+display:none;
+
+width:100%;
+
+max-height:400px;
+
+object-fit:contain;
+
+margin-top:15px;
+
+border-radius:12px;
+
+}
+
+#status{
+
+margin-top:15px;
+
+font-weight:bold;
+
+text-align:center;
+
+}
+
+.grid{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:12px;
+
+}
+
+label{
+
+display:block;
+
+font-weight:bold;
+
+margin:10px 0 6px;
+
+}
+
+input,
+
+select{
+
+width:100%;
+
+padding:14px;
+
+border:1px solid #ccc;
+
+border-radius:10px;
+
+font-size:17px;
+
+background:white;
+
+}
+
+.actions{
+
+display:flex;
+
+gap:10px;
+
+margin-top:15px;
+
+flex-wrap:wrap;
+
+}
+
+table{
+
+border-collapse:collapse;
+
+width:100%;
+
+font-size:14px;
+
+}
+
+th,
+
+td{
+
+border:1px solid #aaa;
+
+padding:5px;
+
+text-align:center;
+
+}
+
+th{
+
+background:#eee;
+
+}
+
+td input{
+
+border:0;
+
+border-radius:0;
+
+text-align:center;
+
+padding:7px;
+
+background:transparent;
+
+}
+
+.total{
+
+font-weight:bold;
+
+background:#f4f4f4;
+
+}
+
+.info{
+
+background:#eef7f1;
+
+padding:15px;
+
+border-radius:12px;
+
+margin-top:15px;
+
+}
+
+.small{
+
+color:#666;
+
+font-size:13px;
+
+}
+
+@media(max-width:600px){
+
+.grid{
+
+grid-template-columns:1fr;
+
+}
+
+.card{
+
+margin:0 8px 18px;
+
+padding:15px;
+
+}
+
+table{
+
+font-size:11px;
+
+}
+
+th,
+
+td{
+
+padding:4px;
+
+}
+
+}
+
+@media print{
+
+.scan,
+
+.actions{
+
+display:none;
+
+}
+
+body{
+
+background:white;
+
+}
+
+.card{
+
+box-shadow:none;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>🚗 Fiche Carburant</h1>
+
+<p>
+
+Prends ton ticket en photo et les informations seront automatiquement récupérées.
+
+</p>
+
+</header>
+
+<!-- SCANNER -->
+
+<section class="card scan">
+
+<h2>📷 Scanner un ticket carburant</h2>
+
+<input
+
+id="file"
+
+type="file"
+
+accept="image/*"
+
+capture="environment"
+
+hidden
+
+>
+
+<button
+
+class="primary"
+
+onclick="document.getElementById('file').click()"
+
+>
+
+📷 Prendre le ticket en photo
+
+</button>
+
+<img id="preview">
+
+<div id="status"></div>
+
+<div
+
+id="detected"
+
+style="display:none"
+
+>
+
+<h3>✅ Informations détectées</h3>
+
+<div class="grid">
+
+<div>
+
+<label>Date</label>
+
+<input id="date" type="date">
+
+</div>
+
+<div>
+
+<label>Jour</label>
+
+<input id="day" type="number" min="1" max="31">
+
+</div>
+
+<div>
+
+<label>Relevé compteur</label>
+
+<input id="km">
+
+</div>
+
+<div>
+
+<label>N° immat.</label>
+
+<input id="immat">
+
+</div>
+
+<div>
+
+<label>Litrage</label>
+
+<input id="litres">
+
+</div>
+
+<div>
+
+<label>Montant (€)</label>
+
+<input id="amount">
+
+</div>
+
+</div>
+
+<div class="info">
+
+<strong>Vérifie rapidement les informations avant d'ajouter.</strong>
+
+<br><br>
+
+Si quelque chose est mal lu, tu peux le corriger ici.
+
+</div>
+
+<div class="actions">
+
+<button
+
+class="primary"
+
+onclick="addTicket()"
+
+>
+
+✅ Ajouter automatiquement à la fiche
+
+</button>
+
+<button
+
+class="secondary"
+
+onclick="cancelScan()"
+
+>
+
+Annuler
+
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- FICHE -->
+
+<section class="card">
+
+<h2>📋 Relevé des consommations</h2>
+
+<div class="grid">
+
+<div>
+
+<label>Nom</label>
+
+<input
+
+id="name"
+
+placeholder="Nom"
+
+>
+
+</div>
+
+<div>
+
+<label>N° carte</label>
+
+<input
+
+id="card"
+
+placeholder="N° carte"
+
+>
+
+</div>
+
+<div>
+
+<label>Mois</label>
+
+<input
+
+id="month"
+
+type="month"
+
+>
+
+</div>
+
+</div>
+
+<br>
+
+<div style="overflow:auto">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Jours</th>
+
+<th>Relevé compteur</th>
+
+<th>N° immat.</th>
+
+<th>Litrage</th>
+
+<th>Montant</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tbody"></tbody>
+
+</table>
+
+</div>
+
+<div class="actions">
+
+<button
+
+class="secondary"
+
+onclick="clearAll()"
+
+>
+
+🗑️ Effacer
+
+</button>
+
+<button
+
+class="primary"
+
+onclick="window.print()"
+
+>
+
+🖨️ Imprimer / PDF
+
+</button>
+
+</div>
+
+</section>
+
+<script>
+
+/* =========================
+
+   DONNÉES
+
+========================= */
+
+let rows =
+
+JSON.parse(localStorage.getItem("fuelRows") || "{}");
+
+function save(){
+
+localStorage.setItem(
+
+"fuelRows",
+
+JSON.stringify(rows)
+
+);
+
+}
+
+/* =========================
+
+   AFFICHAGE TABLEAU
+
+========================= */
+
+function draw(){
+
+const tbody =
+
+document.getElementById("tbody");
+
+tbody.innerHTML = "";
+
+let totalLitres = 0;
+
+let totalAmount = 0;
+
+for(let i=1;i<=31;i++){
+
+let x = rows[i] || {};
+
+totalLitres +=
+
+parseFloat(
+
+String(x.litres || "")
+
+.replace(",", ".")
+
+) || 0;
+
+totalAmount +=
+
+parseFloat(
+
+String(x.amount || "")
+
+.replace(",", ".")
+
+) || 0;
+
+tbody.innerHTML += `
+
+<tr>
+
+<td>
+
+<strong>${i}</strong>
+
+</td>
+
+<td>
+
+<input
+
+value="${escapeHTML(x.km || "")}"
+
+onchange="setValue(${i},'km',this.value)"
+
+>
+
+</td>
+
+<td>
+
+<input
+
+value="${escapeHTML(x.immat || "")}"
+
+onchange="setValue(${i},'immat',this.value)"
+
+>
+
+</td>
+
+<td>
+
+<input
+
+value="${escapeHTML(x.litres || "")}"
+
+onchange="setValue(${i},'litres',this.value)"
+
+>
+
+</td>
+
+<td>
+
+<input
+
+value="${escapeHTML(x.amount || "")}"
+
+onchange="setValue(${i},'amount',this.value)"
+
+>
+
+</td>
+
+</tr>
+
+`;
+
+}
+
+tbody.innerHTML += `
+
+<tr class="total">
+
+<td>Total</td>
+
+<td></td>
+
+<td></td>
+
+<td>
+
+${totalLitres.toFixed(2).replace(".",",")} L
+
+</td>
+
+<td>
+
+${totalAmount.toFixed(2).replace(".",",")} €
+
+</td>
+
+</tr>
+
+`;
+
+}
+
+/* =========================
+
+   PROTECTION HTML
+
+========================= */
+
+function escapeHTML(value){
+
+return String(value)
+
+.replace(/&/g,"&amp;")
+
+.replace(/</g,"&lt;")
+
+.replace(/>/g,"&gt;")
+
+.replace(/"/g,"&quot;");
+
+}
+
+/* =========================
+
+   MODIFICATION MANUELLE
+
+========================= */
+
+function setValue(day,key,value){
+
+if(!rows[day]){
+
+rows[day] = {};
+
+}
+
+rows[day][key] = value;
+
+save();
+
+draw();
+
+}
+
+/* =========================
+
+   SCANNER
+
+========================= */
+
+const file =
+
+document.getElementById("file");
+
+file.addEventListener(
+
+"change",
+
+async function(){
+
+const f = file.files[0];
+
+if(!f){
+
+return;
+
+}
+
+const preview =
+
+document.getElementById("preview");
+
+const status =
+
+document.getElementById("status");
+
+const detected =
+
+document.getElementById("detected");
+
+preview.src =
+
+URL.createObjectURL(f);
+
+preview.style.display =
+
+"block";
+
+detected.style.display =
+
+"none";
+
+status.textContent =
+
+"⏳ Lecture du ticket...";
+
+try{
+
+const result =
+
+await Tesseract.recognize(
+
+f,
+
+"fra+eng",
+
+{
+
+logger:function(m){
+
+if(
+
+m.status ===
+
+"recognizing text"
+
+){
+
+status.textContent =
+
+"⏳ Lecture du ticket : "
+
++
+
+Math.round(
+
+m.progress * 100
+
+)
+
++
+
+"%";
+
+}
+
+}
+
+}
+
+);
+
+const text =
+
+result.data.text;
+
+console.log(text);
+
+/* Analyse ticket */
+
+parseTicket(text);
+
+status.textContent =
+
+"✅ Ticket lu ! Vérifie les informations.";
+
+detected.style.display =
+
+"block";
+
+}catch(error){
+
+console.error(error);
+
+status.textContent =
+
+"❌ Impossible de lire le ticket. Essaie avec une photo plus nette.";
+
+}
+
+file.value = "";
+
+});
+
+/* =========================
+
+   LECTURE DU TICKET
+
+========================= */
+
+function parseTicket(text){
+
+let t =
+
+text
+
+.replace(/\r/g," ")
+
+.replace(/\n+/g," ")
+
+.replace(/\s+/g," ");
+
+/* DATE */
+
+let dateMatch =
+
+t.match(
+
+/\b(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})\b/
+
+);
+
+if(dateMatch){
+
+let dayNumber =
+
+parseInt(dateMatch[1]);
+
+let monthNumber =
+
+parseInt(dateMatch[2]);
+
+let yearNumber =
+
+parseInt(dateMatch[3]);
+
+if(yearNumber < 100){
+
+yearNumber += 2000;
+
+}
+
+document.getElementById("date").value =
+
+yearNumber
+
++
+
+"-"
+
++
+
+String(monthNumber).padStart(2,"0")
+
++
+
+"-"
+
++
+
+String(dayNumber).padStart(2,"0");
+
+document.getElementById("day").value =
+
+dayNumber;
+
+/* Mois automatiquement */
+
+document.getElementById("month").value =
+
+yearNumber
+
++
+
+"-"
+
++
+
+String(monthNumber).padStart(2,"0");
+
+}
+
+/* =========================
+
+   KILOMÉTRAGE
+
+========================= */
+
+let kmMatch =
+
+t.match(
+
+/\bKm\s*[:.]?\s*([0-9][0-9 .]{3,7})/i
+
+);
+
+if(kmMatch){
+
+document.getElementById("km").value =
+
+kmMatch[1]
+
+.replace(/[ .]/g,"")
+
+.replace(/[Oo]/g,"0");
+
+}
+
+/* =========================
+
+   LITRAGE
+
+========================= */
+
+/*
+
+On cherche une quantité suivie
+
+de L.
+
+Exemple :
+
+123,97 L
+
+*/
+
+let litreMatches =
+
+[
+
+...t.matchAll(
+
+/(\d{1,4}[,.]\d{1,3})\s*L\b/gi
+
+)
+
+];
+
+if(litreMatches.length){
+
+let litre =
+
+litreMatches[
+
+litreMatches.length - 1
+
+][1];
+
+document.getElementById("litres").value =
+
+litre.replace(".",",");
+
+}
+
+/* =========================
+
+   MONTANT
+
+========================= */
+
+let amountMatches =
+
+[
+
+...t.matchAll(
+
+/(\d{1,5}[,.]\d{2})\s*(?:
